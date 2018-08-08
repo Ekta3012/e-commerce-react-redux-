@@ -161,17 +161,22 @@ class Card extends Component {
                         <input type="submit" className="submit-price-button"/>
                     </form>
                 </span>
+                <div className="col-md-12">
+                    {renderItem}
+                </div>
+               
                 <div className="cart-item">
                     <span className="cart">
                         {this.props.cart.length}
                     </span>
                     <span className="glyphicon glyphicon-shopping-cart" onClick={this.showCart} ></span>
                 </div>
-                
-                    {renderItem}
-                <div id="page-numbers">
-                    {renderPageNumbers}
+                <div className="col-md-12">
+                    <div id="page-numbers">
+                        {renderPageNumbers}
+                    </div>
                 </div>
+                
 
                 <ReactBootstrap.Modal
                     show={this.state.show}

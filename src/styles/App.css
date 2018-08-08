@@ -26,9 +26,6 @@ h1 {
     text-align: center;
     text-decoration: bold;
 }
-.content{
-    padding: 2%;
-}
 
 .card-img-top{
     width: 200;
@@ -98,6 +95,10 @@ h1 {
 .select-heading{
     display: inline;
     font-weight: bold;
+}
+
+.price{
+    text-align: center;
 }
 
 .input-price{
