@@ -58,6 +58,7 @@ class Card extends Component {
     handleSubmit(e){
         e.preventDefault();
         const price_data=this.formToJSON(e.target.elements);
+        console.log("price data",price_data);
         applyPriceFilter(price_data)
         .then(res=>{
             const filter_data=res.data;

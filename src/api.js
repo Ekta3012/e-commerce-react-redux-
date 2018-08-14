@@ -6,7 +6,8 @@ export const getCardData = (number) => {
 }
 
 export const applyPriceFilter = (params) => {
-    return axios.get(`/api/getbracelets?minimum=${params.minimum}&maximum=${params.maximum}`)
+    console.log("params",params)
+    return axios.get(`/api/priceFilterBracelets?minimum=${params.minimum}&maximum=${params.maximum}`)
 }
 
 export const applyCategoryFilter = (category) => {

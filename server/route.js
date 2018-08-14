@@ -18,7 +18,8 @@ router.get('/getbracelets', (req, res) => {
 router.get('/priceFilterBracelets',(req,res)=>{
     const min=req.query.minimum;
     const max=req.query.maximum;
-    
+
+    console.log("min",min,"max",max) ;   
     braceletModel.find({Price:{$gt:min,$lt:max}},(err,response)=>{
         if(err)
             return res.status(400).send(err);
