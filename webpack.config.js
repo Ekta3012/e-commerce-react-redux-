@@ -8,6 +8,8 @@ module.exports = {
     path: path.join(__dirname, "/dist"),
     filename: "index-bundle.js"
   },
+  watch: true,
+  devtool: 'eval-source-map',
   module: {
     rules: [
       {

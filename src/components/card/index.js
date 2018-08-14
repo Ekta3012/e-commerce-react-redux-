@@ -1,9 +1,12 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import * as ReactBootstrap from "react-bootstrap";
+import Pagination from "react-js-pagination";
+const Loader=require("react-loader");
 
 import { bindActionCreators } from "redux";
 import { getData,addCartData } from "../actions";
+import { applyPriceFilter,applyCategoryFilter } from "../../api";
 
 class Card extends Component {
     constructor(props){
@@ -13,18 +16,20 @@ class Card extends Component {
             show:false,
             displayData : [],
             category:['CL','Jetta','Allroad','Accent','Civic','Mazda6','RX-7','Sportage','Sierra'],
-            currentPage:1,
-            perPageItem:20
+            activePage:1,
+            loaded : false
         }
         this.onCardClick = this.onCardClick.bind(this);
         this.showCart = this.showCart.bind(this);
         this.handleClose=this.handleClose.bind(this);
         this.handleSubmit=this.handleSubmit.bind(this);
         this.change=this.change.bind(this);
-        this.handlePageChange=this.handlePageChange.bind(this);
+        this.onPageClick=this.onPageClick.bind(this);
     }
+
     componentDidMount(){
-        this.props.getData();
+        this.props.getData(1);
+        
     }
 
     onCardClick (id) {
@@ -53,92 +58,59 @@ class Card extends Component {
     handleSubmit(e){
         e.preventDefault();
         const price_data=this.formToJSON(e.target.elements);
-
-        const tmp = this.state.displayData.slice();
-        const filter=tmp.filter(product => (
-            parseInt(product.Price.replace("$","")) >  price_data.minimum &&
-            parseInt(product.Price.replace("$","")) <=  price_data.maximum
-        ));
-
-        this.setState({
-            displayData: filter
-        });        
+        applyPriceFilter(price_data)
+        .then(res=>{
+            const filter_data=res.data;
+            this.setState({
+                displayData:filter_data
+            })
+        })
    }
 
     change(event){
         event.preventDefault();
-        const tmp = this.state.displayData.slice();
+        /* const tmp = this.state.displayData.slice();
         const filter=tmp.filter(product=>(
             product.Category == event.target.value
         ))
-
         this.setState({
             displayData:filter
-        });
-
+        }); */
+        applyCategoryFilter(event.target.value)
+        .then(res => {
+            const filter_data = res.data;
+            this.setState({
+                displayData:filter_data
+            })
+        })
     }
 
-    handlePageChange(event){
-        event.preventDefault();
-        this.setState({currentPage:Number(event.target.id)});
+    onPageClick (pageNum){
+        this.setState({
+            activePage:pageNum
+        })
+        this.props.getData(this.state.activePage);
     }
 
     handleClose() {
         this.setState({ show: false });
-      }
+    }
 
     componentWillReceiveProps(newProps){
         const a = newProps.data;
-        this.setState({
-            displayData:a
-        })
+        console.log("props",newProps.data)
+        setTimeout(
+            this.setState({
+                displayData:a,
+                loaded:true
+            }),10000
+        )
     }
+
     render() {
-            const { currentPage,perPageItem,displayData } =this.state; 
-            const indexOfLastItem=currentPage*perPageItem;
-            const indexOfFirstItem=indexOfLastItem-perPageItem;
-            const currentItem = displayData.slice(indexOfFirstItem,indexOfLastItem);
-
-            const renderItem = currentItem.map((item,index)=>{
-                return (
-                    <div className="card" key = {index}>
-                        <img className="card-img-top" src={item.url} alt="Card image cap" width="200" height="150"/>
-                        <div className="card-body">
-                            <h5 className="card-title">{item.Title}</h5>
-                            <p className="card-text">
-                                Category :{item.Category}<br/>
-                                Price: {item.Price}
-                            </p>
-                            <button className="btn btn-success cart_button" onClick={ () => 
-                                this.onCardClick(item.id)
-                                } value={item.id}>
-                                Add to Cart
-                            </button>
-                        </div>
-                    </div>
-                )
-            })
-
-            const pageNumbers=[];
-            for(let i=1;i<=Math.ceil(displayData.length/perPageItem);i++)
-            {
-                pageNumbers.push(i);
-            }
-
-            const renderPageNumbers=pageNumbers.map(number=>{
-                return (
-                    <button
-                        key={number}
-                        id={number}
-                        onClick={this.handlePageChange}
-                        className="pagination-button">   {number}
-                    </button>
-                )
-            });
-
-
         return (
             <div className="Card row">
+                <Loader loaded={this.state.loaded} className="spinner"></Loader>
                 <span className="type col-sm-4">
                     <h5 className="select-heading">Select the type : </h5>
                     <select onChange={this.change} className="select"> 
@@ -156,13 +128,34 @@ class Card extends Component {
                         Min : &nbsp; <input type="text" name="minimum" className="input-price"/> 
                         Max : &nbsp;<input type="text" name="maximum" className="input-price"/>
                         <label>
-                            <img src=""/>
                         </label>
                         <input type="submit" className="submit-price-button"/>
                     </form>
                 </span>
                 <div className="col-md-12">
-                    {renderItem}
+                    {
+                        this.state.displayData ?  (
+                            this.state.displayData.map((item,key)=>{
+                                return (
+                                    <div className="card" key = {key}>
+                                        <img className="card-img-top" src={item.url} alt="Card image cap" width="200" height="150"/>
+                                        <div className="card-body">
+                                            <h5 className="card-title">{item.Title}</h5>
+                                            <p className="card-text">
+                                                Category :{item.Category}<br/>
+                                                Price: {item.Price}
+                                            </p>
+                                            <button className="btn btn-success cart_button" onClick={ () => this.onCardClick(item.id)} value={item.id}>
+                                                Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+                                )
+                            })    
+                        ) :  (
+                                <div> No more result</div>
+                        )       
+                    }
                 </div>
                
                 <div className="cart-item">
@@ -171,13 +164,15 @@ class Card extends Component {
                     </span>
                     <span className="glyphicon glyphicon-shopping-cart" onClick={this.showCart} ></span>
                 </div>
-                <div className="col-md-12">
-                    <div id="page-numbers">
-                        {renderPageNumbers}
-                    </div>
+                <div>
+                     <Pagination
+                        activePage={this.state.activePage}
+                        itemsCountPerPage={20}
+                        totalItemsCount={1000}
+                        pageRangeDisplayed={5}
+                        onChange={this.onPageClick}
+                        />                    
                 </div>
-                
-
                 <ReactBootstrap.Modal
                     show={this.state.show}
                     onHide={this.handleClose}
@@ -225,8 +220,3 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 export default connect(mapStateToProps,mapDispatchToProps)(Card);
-
-
-
-
-

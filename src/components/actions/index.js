@@ -6,15 +6,15 @@ export const DATA_FAILED="DATA_FAILED";
 export const ADD_CART="ADD_CART";
 export const FILTER_DATA="FILTER_DATA";
 
-export const getData = ()=> {
+export const getData = (pageNum)=> {
     return (dispatch)=>{
-        getCardData()
+        getCardData(pageNum)
         .then(res =>    {
             dispatch({
                 type:DATA_SUCCESS,
                 payload:res.data
             })
-        })
+        });
     }
 }
 
